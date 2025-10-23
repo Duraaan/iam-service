@@ -15,9 +15,6 @@ import java.util.stream.Collectors;
 /**
  * Representa la entidad principal para la gestión de usuarios en la base de datos.
  * Define la estructura de la tabla 'users', sus propiedades y su relación many to many con la entidad Role.
- *
- * @author Sebastián Durán
- * @version 1.0
  */
 @Entity
 @Table(name = "users")
@@ -56,7 +53,7 @@ public class User implements UserDetails {
     private Set<Role> roles;
 
     /**
-     * Propósito: Mapear los Roles del dominio (Set<Role>) a los Permisos
+     * Mapea los Roles del dominio (Set<Role>) a los Permisos
      * que entiende Spring Security (Collection<? extends GrantedAuthority>).
      */
     @Override

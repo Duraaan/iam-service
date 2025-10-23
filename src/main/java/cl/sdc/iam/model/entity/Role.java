@@ -6,9 +6,6 @@ import lombok.*;
 /**
  * Representa la entidad principal para la gestión de Roles en la base de datos.
  * Define la estructura de la tabla 'roles' y sus propiedades.
- *
- * @author Sebastián Durán
- * @version 1.0
  */
 @Entity
 @Table(name = "roles")
