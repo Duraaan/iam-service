@@ -42,6 +42,8 @@ public class User implements UserDetails {
     private String firstName;
 
     private String lastName;
+
+    @Column(nullable = false)
     private int age;
 
     @ManyToMany(fetch = FetchType.EAGER)
