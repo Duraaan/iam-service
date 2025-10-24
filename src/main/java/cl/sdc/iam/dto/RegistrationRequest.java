@@ -1,8 +1,6 @@
 package cl.sdc.iam.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 
 /**
  * Registro de usuario DTO
@@ -22,6 +20,7 @@ public record RegistrationRequest(
         String rut,
 
         @NotBlank(message = "El email es obligatorio")
+        @Email(message = "El formato del email no es válido")
         String email,
 
         @NotBlank(message = "La contraseña es obligatoria")
@@ -33,9 +32,12 @@ public record RegistrationRequest(
 
         @NotBlank(message = "El nombre es obligatorio")
         String firstName,
+
+        @NotBlank(message = "El apellido es obligatorio")
         String lastName,
 
         @NotNull(message = "La edad es obligatoria")
+        @Min(value = 18, message = "Debe ser mayor de 18 años")
         int age
 ) {
 }
