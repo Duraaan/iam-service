@@ -7,6 +7,9 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+/**
+ * Clase de configuración de seguridad que define los beans necesarios para la autenticación y el cifrado de contraseñas.
+ */
 @Configuration
 public class SecurityConfig {
 

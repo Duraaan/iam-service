@@ -4,6 +4,17 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+/**
+ * Registro de usuario DTO
+ *
+ * @param rut             RUT del usuario
+ * @param email           Email del usuario
+ * @param password        Contraseña del usuario
+ * @param passwordConfirm Confirmación de la contraseña
+ * @param firstName      Nombre del usuario
+ * @param lastName       Apellido del usuario
+ * @param age            Edad del usuario
+ */
 public record RegistrationRequest(
 
         @NotBlank(message = "El RUT es obligatorio")
