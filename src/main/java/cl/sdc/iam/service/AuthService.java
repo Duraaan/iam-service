@@ -51,16 +51,16 @@ public class AuthService {
 
         String jwtToken = jwtService.generateToken(user);
 
-        return new AuthResponse("Usuario registrado exitosamente!", jwtToken, user.getEmail());
+        return new AuthResponse(jwtToken, "Bearer", user.getEmail());
     }
 
     public AuthResponse login(LoginRequest request) {
 
-          authenticationManager.authenticate(
-                  new UsernamePasswordAuthenticationToken(
-                          request.email(),
-                          request.password()
-                  ));
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.email(),
+                        request.password()
+                ));
 
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
@@ -68,6 +68,6 @@ public class AuthService {
         String jwtToken = jwtService.generateToken(user);
 
 
-        return new AuthResponse("Inicio de sesión exitoso!", jwtToken, user.getEmail());
+        return new AuthResponse(jwtToken, "Bearer", user.getEmail());
     }
 }

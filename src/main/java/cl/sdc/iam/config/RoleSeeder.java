@@ -4,11 +4,13 @@ import cl.sdc.iam.model.entity.Role;
 import cl.sdc.iam.model.enums.RoleName;
 import cl.sdc.iam.repository.RoleRepository;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
 
 /**
  * Clase encargada de inicializar los roles en la base de datos al iniciar la aplicación.
  * Implementa CommandLineRunner para ejecutar el código después de que el contexto de Spring se haya cargado.
  */
+@Component
 public class RoleSeeder implements CommandLineRunner {
 
     private final RoleRepository roleRepository;

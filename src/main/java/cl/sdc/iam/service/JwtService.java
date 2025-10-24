@@ -2,14 +2,13 @@ package cl.sdc.iam.service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.security.Key;
+import javax.crypto.SecretKey;
 import java.util.Date;
 
 /**
@@ -33,10 +32,10 @@ public class JwtService {
     public String generateToken(UserDetails userDetails) {
 
         return Jwts.builder()
-                .setSubject(userDetails.getUsername())
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
-                .signWith(getSignatureKey(), SignatureAlgorithm.HS256)
+                .subject(userDetails.getUsername())
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + jwtExpiration))
+                .signWith(getSignatureKey())
                 .compact();
     }
 
@@ -45,7 +44,7 @@ public class JwtService {
      *
      * @return Clave de firma.
      */
-    private Key getSignatureKey() {
+    private SecretKey getSignatureKey() {
         byte[] keyBytes = Decoders.BASE64.decode(jwtSecretKey);
         return Keys.hmacShaKeyFor(keyBytes);
     }
@@ -57,11 +56,11 @@ public class JwtService {
      * @return valores extraídos.
      */
     private Claims extractAllClaims(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSignatureKey())
+        return Jwts.parser()
+                .verifyWith(getSignatureKey())
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseSignedClaims(token)
+                .getPayload();
     }
 
     public String extractUsername(String token) {

@@ -11,9 +11,9 @@ import jakarta.validation.constraints.Size;
  * @param email           Email del usuario
  * @param password        Contraseña del usuario
  * @param passwordConfirm Confirmación de la contraseña
- * @param firstName      Nombre del usuario
- * @param lastName       Apellido del usuario
- * @param age            Edad del usuario
+ * @param firstName       Nombre del usuario
+ * @param lastName        Apellido del usuario
+ * @param age             Edad del usuario
  */
 public record RegistrationRequest(
 
@@ -37,5 +37,6 @@ public record RegistrationRequest(
 
         @NotNull(message = "La edad es obligatoria")
         int age
-) {}
+) {
+}
 
