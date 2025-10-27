@@ -8,12 +8,15 @@ import cl.sdc.iam.exception.PasswordsDoNotMatchException;
 import cl.sdc.iam.exception.RoleNotFoundException;
 import cl.sdc.iam.model.entity.Role;
 import cl.sdc.iam.model.entity.User;
+import cl.sdc.iam.model.enums.RoleName;
 import cl.sdc.iam.repository.RoleRepository;
 import cl.sdc.iam.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +27,7 @@ import java.util.Set;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthService {
 
     private final UserRepository userRepository;
@@ -33,17 +37,19 @@ public class AuthService {
     private final JwtService jwtService;
 
     public AuthResponse register(RegistrationRequest request) {
+        log.info("Intentando registrar usuario con email: {}", request.email());
 
         if (!request.password().equals(request.passwordConfirm())) {
             throw new PasswordsDoNotMatchException("Las contraseñas no coinciden");
         }
 
         if (userRepository.existsByEmail(request.email())) {
-            throw new EmailAlreadyExistsException("El correo electrónico " + request.email() + " ya esta en uso");
+            log.warn("Fallo el registro: Email {} ya existe", request.email());
+            throw new EmailAlreadyExistsException("El correo electrónico " + request.email() + " ya está en uso");
         }
 
-        Role userRole = roleRepository.findByName("ROLE_USER")
-                .orElseThrow(() -> new RoleNotFoundException("Error interno: El rol 'ROLE_USER' no se encontró. Contacte al administrador."));
+        Role userRole = roleRepository.findByName(RoleName.ROLE_USER.name())
+                .orElseThrow(() -> new RoleNotFoundException("Error interno: El rol "  + RoleName.ROLE_USER.name() +  " no se encontró. Contacte al administrador."));
 
         User user = User.builder()
                 .email(request.email())
@@ -53,23 +59,35 @@ public class AuthService {
 
         userRepository.save(user);
 
+        log.info("Usuario registrado exitosamente con email: {}", user.getEmail());
+
         String jwToken = jwtService.generateToken(user);
 
         return new AuthResponse(jwToken, "Bearer", user.getEmail());
     }
 
     public AuthResponse login(LoginRequest request) {
+        log.info("Intentando login para usuario: {}", request.email());
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.email(),
-                        request.password()
-                ));
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.email(),
+                            request.password()
+                    ));
 
-        User user = (User) authentication.getPrincipal();
+            User user = (User) authentication.getPrincipal();
 
-        String jwToken = jwtService.generateToken(user);
+            String jwToken = jwtService.generateToken(user);
 
-        return new AuthResponse(jwToken, "Bearer", user.getEmail());
+            log.info("Login exitoso para usuario: {}", user.getEmail());
+
+            return new AuthResponse(jwToken, "Bearer", user.getEmail());
+        } catch (AuthenticationException e) {
+            log.warn("Falló el login para usuario {}: {}", request.email(), e.getMessage());
+
+            throw e;
+        }
+
     }
 }

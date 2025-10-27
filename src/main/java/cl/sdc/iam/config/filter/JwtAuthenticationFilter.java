@@ -2,10 +2,12 @@ package cl.sdc.iam.config.filter;
 
 import cl.sdc.iam.service.JwtService;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -23,6 +25,7 @@ import java.util.List;
  * Filtro de autenticación JWT que intercepta las solicitudes HTTP para validar el token JWT.
  */
 @Component
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
@@ -56,34 +59,38 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         final String jwt = authHeader.substring(7);
-        final String userEmail = jwtService.extractUsername(jwt);
 
-        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        try {
+            final String userEmail = jwtService.extractUsername(jwt);
 
-            Claims claims = jwtService.extractAllClaims(jwt);
+            if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+
+                Claims claims = jwtService.extractAllClaims(jwt);
 
                 @SuppressWarnings("unchecked")
                 List<String> roles = claims.get("roles", List.class);
 
-            var authorities = roles.stream()
-                    .map(SimpleGrantedAuthority::new)
-                    .toList();
+                var authorities = roles.stream()
+                        .map(SimpleGrantedAuthority::new)
+                        .toList();
 
-            UserDetails userDetails = new User(userEmail, "", authorities);
+                UserDetails userDetails = new User(userEmail, "", authorities);
 
-            if (jwtService.isTokenValid(jwt, userDetails)) {
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities()
-                );
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                if (jwtService.isTokenValid(jwt, userDetails)) {
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities()
+                    );
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                    log.debug("Usuario {} autenticado via token JWT", userEmail);
+                }
             }
+        } catch (JwtException e) {
+            log.warn("Falló la validación JWT: {}", e.getMessage());
         }
 
         filterChain.doFilter(request, response);
     }
-
-
 }

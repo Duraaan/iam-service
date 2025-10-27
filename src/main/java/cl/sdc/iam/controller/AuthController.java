@@ -4,16 +4,18 @@ import cl.sdc.iam.dto.*;
 import cl.sdc.iam.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
     private final AuthService authService;
 
     @PostMapping("/register")
+    @ResponseStatus(HttpStatus.CREATED)
     public AuthResponse register(@Valid @RequestBody RegistrationRequest request) {
         return authService.register(request);
     }
@@ -21,10 +23,5 @@ public class AuthController {
     @PostMapping("/login")
     public AuthResponse login(@Valid @RequestBody LoginRequest request) {
         return authService.login(request);
-    }
-
-    @GetMapping("/hello-secured")
-    public String helloSecured() {
-        return "¡Hola! Si ves esto, estas autenticado.";
     }
 }

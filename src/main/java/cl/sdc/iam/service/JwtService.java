@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,6 +17,7 @@ import java.util.Date;
  * Servicio para la generación de tokens JWT.
  */
 @Service
+@Slf4j
 public class JwtService {
 
     @Value("${jwt.secret.key}")
@@ -37,13 +39,16 @@ public class JwtService {
                 .map(GrantedAuthority::getAuthority)
                 .toList();
 
-        return Jwts.builder()
+        String token = Jwts.builder()
                 .subject(userDetails.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + jwtExpiration))
                 .claim("roles", roles)
                 .signWith(getSignatureKey())
                 .compact();
+
+        log.debug("Token JWT generado para usuario: {}", userDetails.getUsername());
+        return token;
     }
 
     /**
