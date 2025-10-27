@@ -27,7 +27,6 @@ import java.util.List;
 @Component
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-
     private final JwtService jwtService;
 
     public JwtAuthenticationFilter(JwtService jwtService) {

@@ -1,16 +1,10 @@
 package cl.sdc.iam.dto;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
-/**
- * Registro de usuario DTO
- *
- * @param email           Email del usuario
- * @param password        Contraseña del usuario
- * @param passwordConfirm Confirmación de la contraseña
- */
-public record RegistrationRequest(
-
+public record RegistrationStaffRequest(
         @NotBlank(message = "El email es obligatorio")
         @Email(message = "El formato del email no es válido")
         String email,
@@ -23,4 +17,3 @@ public record RegistrationRequest(
         String passwordConfirm
 ) {
 }
-

@@ -46,7 +46,7 @@ public class RoleSeeder implements CommandLineRunner {
         }
 
         if (userRepository.findByEmail(superAdminEmail).isEmpty()) {
-            Role superAdminRole = roleRepository.findByName(RoleName.ROLE_SUPERADMIN.name())
+            Role superAdminRole = roleRepository.findByName(RoleName.ROLE_SUPER_ADMIN.name())
                     .orElseThrow(() -> new RuntimeException("El rol 'ROLE_SUPERADMIN' no se encontró en la base de datos."));
 
             userRepository.save(

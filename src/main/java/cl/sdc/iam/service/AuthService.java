@@ -1,8 +1,6 @@
 package cl.sdc.iam.service;
 
-import cl.sdc.iam.dto.AuthResponse;
-import cl.sdc.iam.dto.LoginRequest;
-import cl.sdc.iam.dto.RegistrationRequest;
+import cl.sdc.iam.dto.*;
 import cl.sdc.iam.exception.EmailAlreadyExistsException;
 import cl.sdc.iam.exception.PasswordsDoNotMatchException;
 import cl.sdc.iam.exception.RoleNotFoundException;
@@ -36,7 +34,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
 
-    public AuthResponse register(RegistrationRequest request) {
+    public AuthResponse registerUser(RegistrationUserRequest request) {
         log.info("Intentando registrar usuario con email: {}", request.email());
 
         if (!request.password().equals(request.passwordConfirm())) {
@@ -49,7 +47,7 @@ public class AuthService {
         }
 
         Role userRole = roleRepository.findByName(RoleName.ROLE_USER.name())
-                .orElseThrow(() -> new RoleNotFoundException("Error interno: El rol "  + RoleName.ROLE_USER.name() +  " no se encontró. Contacte al administrador."));
+                .orElseThrow(() -> new RoleNotFoundException("Error interno: El rol " + RoleName.ROLE_USER.name() + " no se encontró. Contacte al administrador."));
 
         User user = User.builder()
                 .email(request.email())
@@ -60,6 +58,66 @@ public class AuthService {
         userRepository.save(user);
 
         log.info("Usuario registrado exitosamente con email: {}", user.getEmail());
+
+        String jwToken = jwtService.generateToken(user);
+
+        return new AuthResponse(jwToken, "Bearer", user.getEmail());
+    }
+
+    public AuthResponse registerAdmin(RegistrationAdminRequest request) {
+        log.info("Intentando registrar admin con email: {}", request.email());
+
+        if (!request.password().equals(request.passwordConfirm())) {
+            throw new PasswordsDoNotMatchException("Las contraseñas no coinciden");
+        }
+
+        if (userRepository.existsByEmail(request.email())) {
+            log.warn("Fallo el registro: Email {} ya existe", request.email());
+            throw new EmailAlreadyExistsException("El correo electrónico " + request.email() + " ya está en uso");
+        }
+
+        Role adminRole = roleRepository.findByName(RoleName.ROLE_ADMIN.name())
+                .orElseThrow(() -> new RoleNotFoundException("Error interno: El rol " + RoleName.ROLE_ADMIN.name() + " no se encontró. Contacte al administrador."));
+
+        User user = User.builder()
+                .email(request.email())
+                .password(passwordEncoder.encode(request.password()))
+                .roles(Set.of(adminRole))
+                .build();
+
+        userRepository.save(user);
+
+        log.info("Admin registrado exitosamente con email: {}", user.getEmail());
+
+        String jwToken = jwtService.generateToken(user);
+
+        return new AuthResponse(jwToken, "Bearer", user.getEmail());
+    }
+
+    public AuthResponse registerStaff(RegistrationStaffRequest request) {
+        log.info("Intentando registrar staff con email: {}", request.email());
+
+        if (!request.password().equals(request.passwordConfirm())) {
+            throw new PasswordsDoNotMatchException("Las contraseñas no coinciden");
+        }
+
+        if (userRepository.existsByEmail(request.email())) {
+            log.warn("Fallo el registro: Email {} ya existe", request.email());
+            throw new EmailAlreadyExistsException("El correo electrónico " + request.email() + " ya está en uso");
+        }
+
+        Role staffRole = roleRepository.findByName(RoleName.ROLE_STAFF.name())
+                .orElseThrow(() -> new RoleNotFoundException("Error interno: El rol " + RoleName.ROLE_STAFF.name() + " no se encontró. Contacte al administrador."));
+
+        User user = User.builder()
+                .email(request.email())
+                .password(passwordEncoder.encode(request.password()))
+                .roles(Set.of(staffRole))
+                .build();
+
+        userRepository.save(user);
+
+        log.info("Staff registrado exitosamente con email: {}", user.getEmail());
 
         String jwToken = jwtService.generateToken(user);
 
