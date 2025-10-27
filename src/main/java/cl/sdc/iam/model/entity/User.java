@@ -30,21 +30,10 @@ public class User implements UserDetails {
     private Long id;
 
     @Column(unique = true, nullable = false)
-    private String rut;
-
-    @Column(unique = true, nullable = false)
     private String email;
 
     @Column(nullable = false)
     private String password;
-
-    @Column(nullable = false)
-    private String firstName;
-
-    private String lastName;
-
-    @Column(nullable = false)
-    private int age;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(

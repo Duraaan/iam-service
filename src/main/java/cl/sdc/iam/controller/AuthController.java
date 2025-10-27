@@ -22,4 +22,9 @@ public class AuthController {
     public AuthResponse login(@Valid @RequestBody LoginRequest request) {
         return authService.login(request);
     }
+
+    @GetMapping("/hello-secured")
+    public String helloSecured() {
+        return "¡Hola! Si ves esto, estas autenticado.";
+    }
 }

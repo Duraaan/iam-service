@@ -3,6 +3,9 @@ package cl.sdc.iam.service;
 import cl.sdc.iam.dto.AuthResponse;
 import cl.sdc.iam.dto.LoginRequest;
 import cl.sdc.iam.dto.RegistrationRequest;
+import cl.sdc.iam.exception.EmailAlreadyExistsException;
+import cl.sdc.iam.exception.PasswordsDoNotMatchException;
+import cl.sdc.iam.exception.RoleNotFoundException;
 import cl.sdc.iam.model.entity.Role;
 import cl.sdc.iam.model.entity.User;
 import cl.sdc.iam.repository.RoleRepository;
@@ -10,6 +13,7 @@ import cl.sdc.iam.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -31,43 +35,41 @@ public class AuthService {
     public AuthResponse register(RegistrationRequest request) {
 
         if (!request.password().equals(request.passwordConfirm())) {
-            throw new IllegalArgumentException("Las contraseñas no coinciden");
+            throw new PasswordsDoNotMatchException("Las contraseñas no coinciden");
+        }
+
+        if (userRepository.existsByEmail(request.email())) {
+            throw new EmailAlreadyExistsException("El correo electrónico " + request.email() + " ya esta en uso");
         }
 
         Role userRole = roleRepository.findByName("ROLE_USER")
-                .orElseThrow(() -> new IllegalStateException("Rol de usuario no encontrado"));
+                .orElseThrow(() -> new RoleNotFoundException("Error interno: El rol 'ROLE_USER' no se encontró. Contacte al administrador."));
 
         User user = User.builder()
-                .rut(request.rut())
                 .email(request.email())
                 .password(passwordEncoder.encode(request.password()))
-                .firstName(request.firstName())
-                .lastName(request.lastName())
-                .age(request.age())
                 .roles(Set.of(userRole))
                 .build();
 
         userRepository.save(user);
 
-        String jwtToken = jwtService.generateToken(user);
+        String jwToken = jwtService.generateToken(user);
 
-        return new AuthResponse(jwtToken, "Bearer", user.getEmail());
+        return new AuthResponse(jwToken, "Bearer", user.getEmail());
     }
 
     public AuthResponse login(LoginRequest request) {
 
-        authenticationManager.authenticate(
+        Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.email(),
                         request.password()
                 ));
 
-        User user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+        User user = (User) authentication.getPrincipal();
 
-        String jwtToken = jwtService.generateToken(user);
+        String jwToken = jwtService.generateToken(user);
 
-
-        return new AuthResponse(jwtToken, "Bearer", user.getEmail());
+        return new AuthResponse(jwToken, "Bearer", user.getEmail());
     }
 }
