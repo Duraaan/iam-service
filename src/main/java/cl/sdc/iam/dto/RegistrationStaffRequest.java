@@ -4,6 +4,14 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+/**
+ * Registro de staff DTO
+ *
+ * @param email           Email del administrador
+ * @param password        Contraseña del administrador
+ * @param passwordConfirm Confirmación de la contraseña
+ * @param datoEspecificoStaff Dato específico del usuario
+ */
 public record RegistrationStaffRequest(
         @NotBlank(message = "El email es obligatorio")
         @Email(message = "El formato del email no es válido")
@@ -14,6 +22,9 @@ public record RegistrationStaffRequest(
         String password,
 
         @NotBlank(message = "La confirmación de contraseña es obligatoria")
-        String passwordConfirm
+        String passwordConfirm,
+
+        @NotBlank(message = "El dato específico es obligatorio")
+        String datoEspecificoStaff
 ) {
 }

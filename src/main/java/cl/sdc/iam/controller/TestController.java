@@ -56,7 +56,7 @@ public class TestController {
     }
 
     /**
-     * Endpoint accesible solo para usuarios con ROLE_STAFF
+     * Endpoint accesible solo para usuarios con ROLE_ADMIN
      *
      * @return Mensaje de saludo para administradores.
      */

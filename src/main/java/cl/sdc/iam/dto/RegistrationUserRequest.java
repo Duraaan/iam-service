@@ -8,6 +8,7 @@ import jakarta.validation.constraints.*;
  * @param email           Email del usuario
  * @param password        Contraseña del usuario
  * @param passwordConfirm Confirmación de la contraseña
+ * @param datoEspecificoUser Dato específico del usuario
  */
 public record RegistrationUserRequest(
 
@@ -20,7 +21,10 @@ public record RegistrationUserRequest(
         String password,
 
         @NotBlank(message = "La confirmación de contraseña es obligatoria")
-        String passwordConfirm
+        String passwordConfirm,
+
+        @NotBlank(message = "El dato específico es obligatorio")
+        String datoEspecificoUser
 ) {
 }
 
