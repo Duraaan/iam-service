@@ -62,7 +62,7 @@ public class User implements UserDetails {
     private LocalDateTime updatedAt;
 
     @Column(nullable = false)
-    private boolean active = true;
+    private boolean active;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

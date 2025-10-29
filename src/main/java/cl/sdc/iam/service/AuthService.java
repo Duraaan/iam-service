@@ -126,6 +126,7 @@ public class AuthService {
                 .email(email)
                 .password(passwordEncoder.encode(password))
                 .roles(Set.of(role))
+                .active(true)
                 .build();
     }
 

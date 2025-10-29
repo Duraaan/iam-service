@@ -23,10 +23,10 @@ public class RoleSeeder implements CommandLineRunner {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @Value("${app.superadmin.email}")
+    @Value("${app.super_admin.email}")
     private String superAdminEmail;
 
-    @Value("${app.superadmin.password}")
+    @Value("${app.super_admin.password}")
     private String superAdminPassword;
 
     public RoleSeeder(RoleRepository roleRepository, UserRepository userRepository, PasswordEncoder passwordEncoder) {
@@ -54,6 +54,7 @@ public class RoleSeeder implements CommandLineRunner {
                             .email(superAdminEmail)
                             .password(passwordEncoder.encode(superAdminPassword))
                             .roles(Set.of(superAdminRole))
+                            .active(true)
                             .build()
             );
         }
