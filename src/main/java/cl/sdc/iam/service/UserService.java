@@ -1,6 +1,7 @@
 package cl.sdc.iam.service;
 
 import cl.sdc.iam.dto.UserResponse;
+import cl.sdc.iam.exception.ResourceNotFoundException;
 import cl.sdc.iam.model.entity.*;
 import cl.sdc.iam.repository.AdminProfileRepository;
 import cl.sdc.iam.repository.StaffProfileRepository;
@@ -35,6 +36,7 @@ public class UserService implements UserDetailsService {
 
     /**
      * Obtiene una lista de todos los usuarios ACTIVOS.
+     *
      * @return Lista de DTOs UserResponse.
      */
     @Transactional(readOnly = true)
@@ -88,5 +90,20 @@ public class UserService implements UserDetailsService {
                 datoStaff,
                 datoAdmin
         );
+    }
+
+    /**
+     * Obtiene un usuario activo por su ID.
+     *
+     * @param id El ID del usuario a buscar.
+     * @return El DTO UserResponse con los datos del usuario.
+     * @throws ResourceNotFoundException si el usuario no se encuentra o no está activo.
+     */
+    @Transactional(readOnly = true)
+    public UserResponse getUserById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + id));
+
+        return mapToUserResponse(user);
     }
 }

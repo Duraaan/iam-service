@@ -7,9 +7,9 @@ import jakarta.validation.constraints.Size;
 /**
  * Registro de administrador DTO
  *
- * @param email           Email del administrador
- * @param password        Contraseña del administrador
- * @param passwordConfirm Confirmación de la contraseña
+ * @param email               Email del administrador
+ * @param password            Contraseña del administrador
+ * @param passwordConfirm     Confirmación de la contraseña
  * @param datoEspecificoAdmin Dato específico del usuario
  */
 public record RegistrationAdminRequest(

@@ -26,4 +26,5 @@ public record UpdateUserRequest(
 
         // Campos del AdminProfile
         String datoEspecificoAdmin
-) {}
+) {
+}

@@ -64,4 +64,10 @@ public class GlobalExceptionHandler {
         Map<String, String> errorResponse = Map.of("error", "Credenciales inválidas");
         return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
     }
+
+   @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleResourceNotFoundException(ResourceNotFoundException ex) {
+       Map<String, String> errorResponse = Map.of("error", "Usuario no encontrado");
+       return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+   }
 }

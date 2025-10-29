@@ -5,9 +5,9 @@ import jakarta.validation.constraints.*;
 /**
  * Registro de usuario DTO
  *
- * @param email           Email del usuario
- * @param password        Contraseña del usuario
- * @param passwordConfirm Confirmación de la contraseña
+ * @param email              Email del usuario
+ * @param password           Contraseña del usuario
+ * @param passwordConfirm    Confirmación de la contraseña
  * @param datoEspecificoUser Dato específico del usuario
  */
 public record RegistrationUserRequest(

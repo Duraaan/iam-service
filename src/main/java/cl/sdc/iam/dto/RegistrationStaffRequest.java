@@ -7,9 +7,9 @@ import jakarta.validation.constraints.Size;
 /**
  * Registro de staff DTO
  *
- * @param email           Email del administrador
- * @param password        Contraseña del administrador
- * @param passwordConfirm Confirmación de la contraseña
+ * @param email               Email del administrador
+ * @param password            Contraseña del administrador
+ * @param passwordConfirm     Confirmación de la contraseña
  * @param datoEspecificoStaff Dato específico del usuario
  */
 public record RegistrationStaffRequest(
