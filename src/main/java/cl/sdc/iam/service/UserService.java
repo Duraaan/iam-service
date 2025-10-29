@@ -1,12 +1,12 @@
 package cl.sdc.iam.service;
 
+import cl.sdc.iam.dto.UpdateUserRequest;
 import cl.sdc.iam.dto.UserResponse;
+import cl.sdc.iam.exception.EmailAlreadyExistsException;
 import cl.sdc.iam.exception.ResourceNotFoundException;
 import cl.sdc.iam.model.entity.*;
-import cl.sdc.iam.repository.AdminProfileRepository;
-import cl.sdc.iam.repository.StaffProfileRepository;
-import cl.sdc.iam.repository.UserProfileRepository;
-import cl.sdc.iam.repository.UserRepository;
+import cl.sdc.iam.model.enums.RoleName;
+import cl.sdc.iam.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -26,6 +26,7 @@ public class UserService implements UserDetailsService {
     private final UserProfileRepository userProfileRepository;
     private final StaffProfileRepository staffProfileRepository;
     private final AdminProfileRepository adminProfileRepository;
+    private final RoleRepository roleRepository;
 
     @Override
     @Transactional(readOnly = true) // Buena práctica para métodos de solo lectura
@@ -44,7 +45,7 @@ public class UserService implements UserDetailsService {
         List<User> users = userRepository.findAll();
 
         return users.stream()
-                .map(this::mapToUserResponse) // Llama al método helper
+                .map(this::mapToUserResponse) // Llama al metodo helper
                 .collect(Collectors.toList());
     }
 
@@ -105,5 +106,89 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + id));
 
         return mapToUserResponse(user);
+    }
+
+    /**
+     * Actualiza un usuario existente y sus perfiles asociados.
+     * Esta operación es transaccional.
+     *
+     * @param id      El ID del usuario a actualizar.
+     * @param request El DTO con los datos a actualizar.
+     * @return El UserResponse actualizado.
+     */
+    @Transactional
+    public UserResponse updateUser(Long id, UpdateUserRequest request) {
+
+        // 1. Buscar al usuario (incluyendo inactivos)
+        User user = userRepository.findByIdIncludingInactive(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + id));
+
+        // 2. Actualizar campos de la entidad User (Base)
+        if (request.email() != null && !request.email().equals(user.getEmail())) {
+            if (userRepository.existsByEmailIncludingInactive(request.email())) {
+                throw new EmailAlreadyExistsException("El email " + request.email() + " ya está en uso");
+            }
+            user.setEmail(request.email());
+        }
+
+        if (request.active() != null) {
+            user.setActive(request.active());
+        }
+
+        if (request.roles() != null && !request.roles().isEmpty()) {
+            Set<Role> newRoles = roleRepository.findByNameIn(request.roles());
+            if (newRoles.size() != request.roles().size()) {
+                throw new ResourceNotFoundException("Uno o más roles no fueron encontrados");
+            }
+            user.setRoles(newRoles);
+        }
+
+        User updatedUser = userRepository.save(user);
+
+        Set<String> newRoleNames = updatedUser.getRoles().stream()
+                .map(Role::getName)
+                .collect(Collectors.toSet());
+
+        if (newRoleNames.contains(RoleName.ROLE_USER.name())) {
+            UserProfile profile = userProfileRepository.findByUser(updatedUser)
+                    .orElse(new UserProfile());
+            profile.setUser(updatedUser);
+            profile.setDatoEspecificoUser(request.datoEspecificoUser());
+            userProfileRepository.save(profile);
+        }
+
+        if (newRoleNames.contains(RoleName.ROLE_STAFF.name())) {
+            StaffProfile profile = staffProfileRepository.findByUser(updatedUser)
+                    .orElse(new StaffProfile());
+            profile.setUser(updatedUser);
+            profile.setDatoEspecificoStaff(request.datoEspecificoStaff());
+            staffProfileRepository.save(profile);
+        }
+
+        if (newRoleNames.contains(RoleName.ROLE_ADMIN.name())) {
+            AdminProfile profile = adminProfileRepository.findByUser(updatedUser)
+                    .orElse(new AdminProfile());
+            profile.setUser(updatedUser);
+            profile.setDatoEspecificoAdmin(request.datoEspecificoAdmin());
+            adminProfileRepository.save(profile);
+        }
+
+        return mapToUserResponse(updatedUser);
+    }
+
+    /**
+     * Elimina lógicamente (soft delete) un usuario por su ID.
+     * Gracias a @SQLDelete en la entidad User, esto ejecutará un UPDATE
+     * en lugar de un DELETE.
+     *
+     * @param id El ID del usuario a "borrar".
+     */
+    @Transactional
+    public void deleteUser(Long id) {
+        if (!userRepository.existsByIdIncludingInactive(id)) {
+            throw new ResourceNotFoundException("Usuario no encontrado con ID: " + id);
+        }
+
+        userRepository.deleteById(id);
     }
 }

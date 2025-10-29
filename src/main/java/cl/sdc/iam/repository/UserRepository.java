@@ -13,4 +13,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END FROM User u WHERE u.email = :email")
     boolean existsByEmailIncludingInactive(@Param("email") String email);
+
+    @Query("SELECT u FROM User u WHERE u.id = :id")
+    Optional<User> findByIdIncludingInactive(@Param("id") Long id);
+
+    @Query("SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END FROM User u WHERE u.id = :id")
+    boolean existsByIdIncludingInactive(@Param("id") Long id);
 }
