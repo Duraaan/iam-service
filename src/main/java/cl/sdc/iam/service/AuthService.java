@@ -48,11 +48,11 @@ public class AuthService {
         userRepository.save(user);
 
         // Crear perfil de User
-        UserProfile staffProfile = UserProfile.builder()
+        UserProfile userProfile = UserProfile.builder()
                 .user(user)
                 .datoEspecificoUser(request.datoEspecificoUser())
                 .build();
-        userProfileRepository.save(staffProfile);
+        userProfileRepository.save(userProfile);
 
         log.info("Usuario registrado exitosamente con email: {}", user.getEmail());
 
